@@ -1,0 +1,15 @@
+# CustomMessages config.yml
+# Use & for color codes (&a = green, &c = red, &f = white, etc.)
+
+# Join message, placeholder {player}
+join-message: "&a[+] &f{player}"
+
+# Quit message, placeholder {player}  
+quit-message: "&c[-] &f{player}"
+
+# Death message, placeholders {player} and {message} (cause of death)
+death-message: "&e💀 &f{player} &7{message}"
+
+# Advancement message, placeholders {player} and {advancement}
+advancement-message: "&d🏆 &f{player} &ecompleted &6{advancement}"
+
