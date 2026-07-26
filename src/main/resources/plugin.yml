@@ -1,0 +1,6 @@
+name: CustomMessages
+version: "1.0.1"
+main: com.example.custommessages.CustomMessagesPlugin
+api-version: "1.12"
+author: OpenCode
+description: Custom join/quit/death/advancement messages
