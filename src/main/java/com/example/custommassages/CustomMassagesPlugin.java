@@ -1,15 +1,16 @@
 package com.example.custommessages;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CustomMessagesPlugin extends JavaPlugin {
 
-    private static CustomMessagesPlugin instance;
+    private static final LegacyComponentSerializer SERIALIZER =
+            LegacyComponentSerializer.legacyAmpersand();
 
     @Override
     public void onEnable() {
-        instance = this;
         saveDefaultConfig();
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
         getLogger().info("CustomMessages has been enabled.");
@@ -20,11 +21,7 @@ public class CustomMessagesPlugin extends JavaPlugin {
         getLogger().info("CustomMessages has been disabled.");
     }
 
-    public static CustomMessagesPlugin getInstance() {
-        return instance;
-    }
-
-    public String formatMessage(String path, String... replacements) {
+    public Component formatMessage(String path, String... replacements) {
         String message = getConfig().getString(path, "");
         if (message == null || message.isEmpty()) {
             return null;
@@ -34,6 +31,6 @@ public class CustomMessagesPlugin extends JavaPlugin {
                 message = message.replace(replacements[i], replacements[i + 1]);
             }
         }
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return SERIALIZER.deserialize(message);
     }
 }
