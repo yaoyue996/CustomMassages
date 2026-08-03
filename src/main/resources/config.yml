@@ -12,4 +12,3 @@ death-message: "&e💀 &f{player} &7{message}"
 
 # Advancement message, placeholders {player} and {advancement}
 advancement-message: "&d🏆 &f{player} &ecompleted &6{advancement}"
-
