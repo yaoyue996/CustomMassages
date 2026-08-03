@@ -1,13 +1,14 @@
 package com.example.custommessages;
 
-import org.bukkit.Achievement;
+import io.papermc.paper.advancement.AdvancementDisplay;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerAchievementAwardedEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -22,76 +23,71 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        String formatted = plugin.formatMessage("join-message",
+        Component formatted = plugin.formatMessage("join-message",
                 "{player}", event.getPlayer().getName());
         if (formatted != null) {
-            event.setJoinMessage(formatted);
+            event.joinMessage(formatted);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        String formatted = plugin.formatMessage("quit-message",
+        Component formatted = plugin.formatMessage("quit-message",
                 "{player}", event.getPlayer().getName());
         if (formatted != null) {
-            event.setQuitMessage(formatted);
+            event.quitMessage(formatted);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
         String cause = extractCause(event);
-        String formatted = plugin.formatMessage("death-message",
-                "{player}", event.getEntity().getName(),
+        Component formatted = plugin.formatMessage("death-message",
+                "{player}", event.getPlayer().getName(),
                 "{message}", cause);
         if (formatted != null) {
-            event.setDeathMessage(formatted);
+            event.deathMessage(formatted);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onAdvancementDone(PlayerAdvancementDoneEvent event) {
-        String key = event.getAdvancement().getKey().getKey();
-        if (key.startsWith("recipes/") || key.endsWith("/root")) {
+        AdvancementDisplay display = event.getAdvancement().getDisplay();
+        if (display == null || !display.doesAnnounceToChat()) {
             return;
         }
-        String advName = formatKeyName(key);
-        String formatted = plugin.formatMessage("advancement-message",
+        String advName = PlainTextComponentSerializer.plainText()
+                .serialize(display.title());
+        Component formatted = plugin.formatMessage("advancement-message",
                 "{player}", event.getPlayer().getName(),
                 "{advancement}", advName);
         if (formatted != null) {
-            Bukkit.broadcastMessage(formatted);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onAchievementAwarded(PlayerAchievementAwardedEvent event) {
-        String achName = formatAchievementName(event.getAchievement());
-        String formatted = plugin.formatMessage("advancement-message",
-                "{player}", event.getPlayer().getName(),
-                "{advancement}", achName);
-        if (formatted != null) {
-            Bukkit.broadcastMessage(formatted);
+            Bukkit.broadcast(formatted);
         }
     }
 
     private String extractCause(PlayerDeathEvent event) {
-        String deathMessage = event.getDeathMessage();
-        if (deathMessage == null || deathMessage.isEmpty()) {
+        Component deathMessage = event.deathMessage();
+        if (deathMessage == null) {
             return "died";
         }
-        Player player = event.getEntity();
+        String text = PlainTextComponentSerializer.plainText().serialize(deathMessage);
+        if (text.isEmpty()) {
+            return "died";
+        }
+        Player player = event.getPlayer();
         String name = player.getName();
-        if (deathMessage.startsWith(name)) {
-            return deathMessage.substring(name.length()).trim();
+        if (text.startsWith(name)) {
+            return text.substring(name.length()).trim();
         }
-        String displayName = player.getDisplayName();
-        if (deathMessage.startsWith(displayName)) {
-            return deathMessage.substring(displayName.length()).trim();
+        String displayName = PlainTextComponentSerializer.plainText()
+                .serialize(player.displayName());
+        if (text.startsWith(displayName)) {
+            return text.substring(displayName.length()).trim();
         }
-        return deathMessage;
+        return text;
     }
-
+}
     private String formatKeyName(String key) {
         String name = key.substring(key.lastIndexOf('/') + 1).replace('_', ' ');
         if (name.isEmpty()) {
